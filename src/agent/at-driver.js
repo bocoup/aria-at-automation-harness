@@ -9,7 +9,7 @@ import { AgentMessage } from './messages.js';
  * @param {string} [options.url.hostname]
  * @param {string} [options.url.pathname]
  * @param {number | string} [options.url.port]
- * @param {object} options.abortSignal
+ * @param {Promise<void>} options.abortSignal
  * @returns {Promise<ATDriver>}
  */
 export async function createATDriver({

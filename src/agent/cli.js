@@ -161,6 +161,14 @@ export function pickAgentCliOptions({
   };
 }
 
+/**
+ * @param {object} options
+ * @param {any} [options.signals]
+ * @param {any} [options.send]
+ * @param {any} [options.stdin]
+ * @param {any} [options.stdout]
+ * @param {any} [options.stderr]
+ */
 export async function createAgentCliParser({ signals, send, stdin, stdout, stderr }) {
   return /** @type {yargs} */ (await yargs())
     .middleware(argv => {
