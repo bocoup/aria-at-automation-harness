@@ -18,11 +18,6 @@ const AFTER_KEYS_DELAY = 5000;
 const AFTER_RUN_TEST_SETUP_BUTTON_DELAY = 500;
 const RUN_TEST_SETUP_BUTTON_TIMEOUT = 1000;
 
-// const AFTER_NAVIGATION_DELAY = 100;
-// const AFTER_KEYS_DELAY = 100;
-// const AFTER_RUN_TEST_SETUP_BUTTON_DELAY = 100;
-// const RUN_TEST_SETUP_BUTTON_TIMEOUT = 100;
-
 export class DriverTestRunner {
   /**
    * @param {object} options
@@ -79,24 +74,24 @@ export class DriverTestRunner {
     const results = [];
 
     for (const command of test.commands) {
-      const openPageSpeech = this._collectSpeech();
-      await this.openPage({
-        url: this._appendBaseUrl(test.target.referencePage),
-        referencePage: test.target.referencePage,
-      });
-      await openPageSpeech.wait({ debounceDelay: AFTER_NAVIGATION_DELAY });
-
-      const commandOutputSpeech = this._collectSpeech();
       const { value: validCommand, errors } = validateKeysFromCommand(command);
 
       if (validCommand) {
-        await this.sendKeys(atKeysFromCommand(validCommand));
-        const spokenOutput = await commandOutputSpeech.wait({ debounceDelay: AFTER_KEYS_DELAY });
+        await this._collectSpeech(AFTER_NAVIGATION_DELAY, () =>
+          this.openPage({
+            url: this._appendBaseUrl(test.target.referencePage),
+            referencePage: test.target.referencePage,
+          })
+        );
 
-        const clearSpeechJob = this._collectSpeech();
-        await this.log(AgentMessage.OPEN_PAGE, { url: 'about:blank' });
-        await this.webDriver.navigate().to('about:blank');
-        await clearSpeechJob.wait({ debounceDelay: AFTER_NAVIGATION_DELAY });
+        const spokenOutput = await this._collectSpeech(AFTER_KEYS_DELAY, () =>
+          this.sendKeys(atKeysFromCommand(validCommand))
+        );
+
+        await this._collectSpeech(AFTER_NAVIGATION_DELAY, async () => {
+          await this.log(AgentMessage.OPEN_PAGE, { url: 'about:blank' });
+          await this.webDriver.navigate().to('about:blank');
+        });
 
         commandsOutput.push({
           command: command.id,
@@ -135,7 +130,12 @@ export class DriverTestRunner {
     };
   }
 
-  _collectSpeech() {
+  /**
+   * @param {number} debounceDelay
+   * @param {function(): Promise<void>} asyncOperation
+   * @returns {Promise<string[]>}
+   */
+  async _collectSpeech(debounceDelay, asyncOperation) {
     let spoken = [];
     const speechJob = startJob(async signal => {
       for await (const speech of signal.cancelable(this.atDriver.speeches())) {
@@ -144,18 +144,16 @@ export class DriverTestRunner {
       }
     });
 
-    return {
-      async wait({ debounceDelay }) {
-        let i = 0;
-        do {
-          i = spoken.length;
-          await timeout(debounceDelay);
-        } while (i < spoken.length);
+    await asyncOperation();
 
-        await speechJob.cancel();
-        return spoken;
-      },
-    };
+    let i = 0;
+    do {
+      i = spoken.length;
+      await timeout(debounceDelay);
+    } while (i < spoken.length);
+
+    await speechJob.cancel();
+    return spoken;
   }
 
   _appendBaseUrl(pathname) {

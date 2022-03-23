@@ -48,7 +48,7 @@ export class ATDriver {
   }
 
   /**
-   * @param  {...(string | ATKey | ATKeyChord | ATKeySequence)} keys
+   * @param  {...(ATKey | ATKeyChord | ATKeySequence)} keys
    */
   async sendKeys(...keys) {
     for (const chord of ATKey.sequence(...keys)) {
@@ -87,22 +87,29 @@ export class ATKey {
   static get ENTER() {
     return new ATKey('enter');
   }
+  /**
+   * @param {string} key
+   * @returns {ATKey}
+   */
   static key(key) {
     return new ATKey(key);
   }
+  /**
+   * @param  {...ATKey} keys
+   * @returns {ATKeyChord}
+   */
   static chord(...keys) {
     return new ATKeyChord(keys);
   }
-  static string(string) {
-    return new ATKeySequence(string.split('').map(char => ATKey.chord(ATKey.key(char))));
-  }
+  /**
+   * @param  {...(ATKey | ATKeyChord | ATKeySequence)} sequence
+   * @returns {ATKeySequence}
+   */
   static sequence(...sequence) {
     /** @type {ATKeyChord[]} */
     const normalized = [];
     for (const item of sequence) {
-      if (typeof item === 'string') {
-        normalized.push(...ATKey.string(string));
-      } else if (item instanceof ATKeyChord) {
+      if (item instanceof ATKeyChord) {
         normalized.push(item);
       } else if (item instanceof ATKey) {
         normalized.push(ATKey.chord(item));

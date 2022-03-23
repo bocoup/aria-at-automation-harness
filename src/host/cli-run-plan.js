@@ -207,8 +207,7 @@ function mainTestPlanMiddleware(argv) {
 function mainServerMiddleware(argv) {
   const { log } = argv;
 
-  argv.server = new HostServer({ log });
-  argv.server.baseUrl.hostname = argv.referenceHostname;
+  argv.server = new HostServer({ log, baseUrl: { hostname: argv.referenceHostname } });
 }
 
 function mainAgentMiddleware(argv) {

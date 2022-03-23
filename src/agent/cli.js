@@ -236,7 +236,6 @@ async function agentVerboseMiddleware(argv) {
 }
 
 async function agentAbortMiddleware(argv) {
-  argv.stop = () => {};
   argv.abortSignal = new Promise(resolve => {
     argv.stop = resolve;
     argv.signals.once('SIGINT', () => resolve());
