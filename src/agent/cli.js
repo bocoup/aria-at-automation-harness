@@ -237,7 +237,10 @@ async function agentVerboseMiddleware(argv) {
 
 async function agentAbortMiddleware(argv) {
   argv.abortSignal = new Promise(resolve => {
-    argv.stop = resolve;
+    argv.stop = async () => {
+      resolve();
+      await argv.logFlushed;
+    };
     argv.signals.once('SIGINT', () => resolve());
     process.once('beforeExit', () => resolve());
   });
@@ -246,7 +249,7 @@ async function agentAbortMiddleware(argv) {
 /**
  * Build and assign main loop arguments based on passed protocol and other arguments.
  * @param {object} argv
- * @param {function(*): void} argv.send
+ * @param {function(*): Promise<void>} argv.send
  * @param {AriaATCIAgent.Log} argv.log
  */
 export function agentLoggerMiddleware(argv) {
@@ -258,14 +261,18 @@ export function agentLoggerMiddleware(argv) {
 
   const logger = createAgentLogger();
   argv.log = logger.log;
+  argv.logFlushed = Promise.resolve();
 
   const { send, verbosity } = argv;
   logger.emitter.on('message', message => {
     if (verbosity.includes(message.data.type)) {
-      send({
-        type: 'log',
-        data: message,
-      });
+      argv.logFlushed = Promise.all([
+        argv.logFlushed,
+        send({
+          type: 'log',
+          data: message,
+        }),
+      ]);
     }
   });
 }
