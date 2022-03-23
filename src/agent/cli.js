@@ -289,6 +289,8 @@ export function agentTestsMiddleware(argv) {
     for await (const message of iterateEmitter(signals, 'message', 'SIGINT')) {
       if (message.type === 'task') {
         yield message.data;
+      } else if (message.type === 'stop') {
+        break;
       }
     }
   })();
