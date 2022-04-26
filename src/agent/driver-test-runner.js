@@ -15,7 +15,7 @@ import { AgentMessage } from './messages.js';
 
 const AFTER_NAVIGATION_DELAY = 1000;
 const AFTER_KEYS_DELAY = 5000;
-const AFTER_RUN_TEST_SETUP_BUTTON_DELAY = 500;
+const AFTER_RUN_TEST_SETUP_BUTTON_DELAY = 5000;
 const RUN_TEST_SETUP_BUTTON_TIMEOUT = 1000;
 
 export class DriverTestRunner {
@@ -42,11 +42,23 @@ export class DriverTestRunner {
     await this.webDriver.navigate().to(url.toString());
 
     try {
+      const loaded = this.webDriver.wait(async webDriver => {
+        await webDriver.executeAsyncScript(function () {
+          return (
+            new Promise(resolve => {
+              window.addEventListener('load', () => resolve());
+            })
+              // Wait until after any microtasks registered by other 'load' event
+              // handlers.
+              .then(() => Promise.resolve())
+          );
+        });
+      });
       const runTestSetup = await this.webDriver.wait(
         until.elementLocated(By.className('button-run-test-setup')),
         RUN_TEST_SETUP_BUTTON_TIMEOUT
       );
-      await timeout(AFTER_RUN_TEST_SETUP_BUTTON_DELAY);
+      await Promise.race([loaded, timeout(AFTER_RUN_TEST_SETUP_BUTTON_DELAY)]);
       await runTestSetup.click();
     } catch ({}) {
       await this.log(AgentMessage.NO_RUN_TEST_SETUP, { referencePage });
