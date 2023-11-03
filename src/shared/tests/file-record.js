@@ -73,7 +73,6 @@ test('Host.collapse', async t => {
   ]);
   t.deepEqual(
     posixHost.collapse({
-      name: 'folder',
       entries: [{ name: 'file', bufferData: new Uint8Array(16) }],
     }),
     [{ name: 'file', bufferData: new Uint8Array(16) }]
@@ -105,24 +104,28 @@ test('Host.collapse', async t => {
 
 /**
  * Normalize differences in files between operating system environments.
- * @param {FileRecord.Record} record
- * @returns {FileRecord.Record}
+ *
+ * @template {FileRecord.Record | FileRecord.NamedRecord} T
+ * @param {T} record
+ * @param {{textEncoder: TextEncoder, textDecoder: TextDecoder}} [coders]
+ * @returns {T}
  */
 function normalizeFileRecord(record, coders = textCoders()) {
   if (record.entries) {
     return { ...record, entries: record.entries.map(entry => normalizeFileRecord(entry, coders)) };
-  } else if (isTextFile(record.name)) {
+  } else if (isTextFileRecord(record)) {
     return normalizeTextRecordEOL(record, coders);
   }
   return record;
 }
 
 /**
- * @param {string} filePath
- * @returns {boolean}
+ * @param {FileRecord.Record | FileRecord.NamedRecord} record
+ * @returns {record is FileRecord.NamedRecord}
  */
-function isTextFile(filePath) {
-  return /\.(?:html|js|json|md|txt)$/.test(filePath);
+function isTextFileRecord(record) {
+  const name = 'name' in record ? record.name : '';
+  return /\.(?:html|js|json|md|txt)$/.test(name);
 }
 
 /**

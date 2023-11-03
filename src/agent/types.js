@@ -13,6 +13,8 @@
  * | 'pressKeys'
  * | 'speechEvent'
  * | 'noRunTestSetup'
+ * | 'atDriverComms'
+ * | 'capabilities'
  * } AriaATCIAgent.Message
  */
 

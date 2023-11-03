@@ -36,7 +36,7 @@ FileRecord.Host = {
 /**
  * @typedef FileRecord.NamedRecord
  * @property {string} name
- * @property {FileRecord.NamedRecord[] | null} [entries] an array of FileRecord.NamedRecord or null if it should be removed
+ * @property {FileRecord.NamedRecord[] | null} [entries] an array of NamedRecords or null if it should be removed
  * @property {Uint8Array | null} [bufferData] a Uint8Array or null if it should be removed
  */
 
