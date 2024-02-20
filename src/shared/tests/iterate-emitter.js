@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { EventEmitter } from 'events';
 
 import test from 'ava';
@@ -21,7 +20,10 @@ test('iterate values emitted by an EventEmitter', async t => {
       await timeout();
     }
   });
-  t.deepEqual(await take(10, iterateEmitter(emitter, 'next')), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  t.deepEqual(
+    await take(10, iterateEmitter(emitter, 'next', '', '')),
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  );
 });
 
 test('stops iterating values emitted by an EventEmitter when it emits a completion event', async t => {
@@ -37,7 +39,7 @@ test('stops iterating values emitted by an EventEmitter when it emits a completi
       await timeout();
     }
   });
-  t.deepEqual(await take(10, iterateEmitter(emitter, 'next', 'complete')), [0, 1, 2, 3, 4]);
+  t.deepEqual(await take(10, iterateEmitter(emitter, 'next', 'complete', '')), [0, 1, 2, 3, 4]);
 });
 
 test('throws an error when an EventEmitter emits an error event', async t => {
@@ -69,7 +71,7 @@ test('iterate queued values emitted by an EventEmitter after it emits a completi
       emitter.emit('next', i);
     }
   });
-  t.deepEqual(await take(10, iterateEmitter(emitter, 'next', 'complete')), [0, 1, 2, 3, 4]);
+  t.deepEqual(await take(10, iterateEmitter(emitter, 'next', 'complete', '')), [0, 1, 2, 3, 4]);
 });
 
 test('iterate queued values emitted by an EventEmitter after it emits an error event', async t => {
