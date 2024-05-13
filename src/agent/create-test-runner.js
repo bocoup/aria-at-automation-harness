@@ -36,7 +36,7 @@ export async function createRunner(options) {
       browser: options.webDriverBrowser,
       abortSignal: options.abortSignal,
     }).catch(cause => {
-      throw new Error('Error connecting to web-driver', { cause });
+      throw new Error('Error initializing browser driver', { cause });
     }),
     createATDriver({
       url: options.atDriverUrl,

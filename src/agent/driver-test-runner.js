@@ -2,8 +2,6 @@
 /// <reference path="../shared/types.js" />
 /// <reference path="types.js" />
 
-import { WebDriver, until, By } from 'selenium-webdriver';
-
 import { startJob } from '../shared/job.js';
 
 import { ATDriver, ATKey, webDriverCodePoints } from './at-driver.js';
