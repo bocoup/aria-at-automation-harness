@@ -53,8 +53,10 @@ export class DriverTestRunner {
         '.button-run-test-setup',
         RUN_TEST_SETUP_BUTTON_TIMEOUT
       );
-    } catch ({}) {
-      await this.log(AgentMessage.NO_RUN_TEST_SETUP, { referencePage });
+    } catch (error) {
+      await this.log(AgentMessage.NO_RUN_TEST_SETUP, {
+        referencePage: `${referencePage} ||| "${error.message}"`,
+      });
     }
   }
 
